@@ -8,7 +8,6 @@
 
 using namespace std;
 
-
 const string keyword_string[] =
 {
 	"main",
@@ -120,62 +119,15 @@ public:
 		RightBrackets,//ÓÒÀ¨ºÅ
 		LeftBigBrackets,//×ó´óÀ¨ºÅ
 		RightBigBrackets,//ÓÒ´óÀ¨ºÅ
+		Douhao,
 		
 		//±êÊ¶·û£¬Êý×Ö£¬×Ö·û´®
 		ID ,
 		Num,
 		String
 	};
-	map<string,token_type> ss={
-	}
-
-	const string keyword_string[] =
-	{
-		"main",
-		"if",
-		"then",
-		"while",
-		"do",
-		"static",
-		"int",
-		"double",
-		"struct",
-		"break",
-		"else",
-		"long",
-		"switch",
-		"case",
-		"typedef",
-		"char",
-		"return",
-		"const",
-		"float",
-		"short",
-		"continue",
-		"for",
-		"void",
-		"default",
-		"sizeof",
-
-		"=",
-		"+",
-		"-",
-		"*",
-		"/",
-		"==",
-		"<",
-		">",
-		"<=",
-		">=",
 
 
-		";",
-		"\"",
-		"(",
-		")",
-		"{",
-		"}",
-	};
 	static constexpr char operator_char[] =
 	{
 
@@ -187,15 +139,20 @@ public:
 		'<',
 		'>',
 	};
-	static constexpr char seprator_char[] =
+	static constexpr char seperator_char[] =
 	{
 		'(',
 		')',
 		'{',
 		'}',
 		';',
+		','
 	};
-
+	class lexer_exception
+	{
+	public:
+		string type;
+	};
 
 	static void error(const string &err);
 	static token_type get_token_type(const string &str);

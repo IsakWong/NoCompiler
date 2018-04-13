@@ -29,7 +29,7 @@ bool Lexer::is_seprator(char ch)
 {
 	for (int i = 0; i<9; i++)
 	{
-		if (ch == seprator_char[i])
+		if (ch == seperator_char[i])
 			return true;
 	}
 	return false;
@@ -66,7 +66,7 @@ bool Lexer::is_operator_char(char ch)
 	return false;
 }
 
-Lexer::token_vector Lexer::Analyze(const string& source)
+Lexer::token_vector Lexer::Analyze(const string& source) throw(Lexer::lexer_exception)
 {
 	token_vector tokens;
 
@@ -79,8 +79,9 @@ Lexer::token_vector Lexer::Analyze(const string& source)
 		switch (_state)
 		{
 		case state::empty:
+		{
 			_tmp.assign("");
-			if (is_space_char(*it) || *it == '\r'||*it == '\n'|| *it =='\t')
+			if (is_space_char(*it) || *it == '\r' || *it == '\n' || *it == '\t')
 			{
 				++it;
 				break;
@@ -99,24 +100,27 @@ Lexer::token_vector Lexer::Analyze(const string& source)
 				++it;
 				break;
 			}
-			if(is_operator_char(*it))
+			if (is_operator_char(*it))
 			{
 				_state = state::receiving_operator;
 				_tmp.push_back(*it);
 				++it;
 				break;
 			}
-			if(is_seprator(*it))
+			if (is_seprator(*it))
 			{
 				_tmp.push_back(*it);
 				token_type type = get_token_type(_tmp);
 				tokens.emplace_back(_tmp, type);
 				_tmp.clear();
-				++it;	
+				++it;
 				break;
 			}
-			error("读取到非法字符:" + *it + _tmp);
+			lexer_exception exp;
+			cout << "错误！未定义的符号 " << *it<<endl;
+			throw exp;
 			break;
+		}
 		case state::receiving_id_or_keyword:
 			if (is_letter_char(*it))
 			{
