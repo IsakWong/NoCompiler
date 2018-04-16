@@ -8,7 +8,7 @@
 
 using namespace std;
 
-const string keyword_string[] =
+const string keywords[] =
 {
 	"main",
 	"if",
@@ -62,14 +62,14 @@ public:
 	Lexer();
 	~Lexer();
 public:
-	enum state
+	enum LexerState
 	{
-		receiving_id_or_keyword,
-		empty,
-		receiving_operator,
-		receiving_num,
+		ReceivingIdOrKeyword,
+		Empty,
+		ReceivingOperator,
+		ReceivingNumber,
 	};
-	enum token_type
+	enum TokenType
 	{
 		Error = -1,
 
@@ -128,7 +128,7 @@ public:
 	};
 
 
-	static constexpr char operator_char[] =
+	static constexpr char CharOperator[] =
 	{
 
 		'+',
@@ -139,7 +139,7 @@ public:
 		'<',
 		'>',
 	};
-	static constexpr char seperator_char[] =
+	static constexpr char CharSeperator[] =
 	{
 		'(',
 		')',
@@ -148,28 +148,41 @@ public:
 		';',
 		','
 	};
-	class lexer_exception
+	class LexerException
 	{
 	public:
 		string type;
 	};
 
 	static void error(const string &err);
-	static token_type get_token_type(const string &str);
-	static bool is_operator_char(char ch);
-	static bool is_letter_char(char ch);
-	static bool is_digit_char(char ch);
-	static bool is_space_char(char ch);
-	static bool is_seprator(char ch);
+	static TokenType getTokenType(const string &str);
+	static bool isOperatorCh(char ch);
+	static bool isLetter(char ch);
+	static bool isDigit(char ch);
+	static bool isSpace(char ch);
+	static bool isSeperator(char ch);
 
-	typedef vector< tuple<string, token_type> > token_vector;
+	class token
+	{
+	public:
+		string value;
+		int row;
+		Lexer::TokenType type;
+		token(const string& _val, const Lexer::TokenType _type,int _row) : type(_type), value(_val),row(_row)
+		{
 
-	static token_vector Analyze(const string& source);
+		}
+	};
+
+	typedef vector< token > TokensVector;
+
+	static TokensVector analyze(const string& source);
 	
 private:
 
 
 	
 };
+
 #endif
 
