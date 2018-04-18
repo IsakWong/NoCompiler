@@ -4,7 +4,8 @@
 
 SemanticAnalyzer::SemanticAnalyzer()
 {
-	addSymbol("__temp", symbol::Variable);
+	addSymbol("NULL", symbol::Variable);
+	addSymbol("_temp", symbol::Variable);
 }
 
 
@@ -32,7 +33,7 @@ SemanticAnalyzer::operand SemanticAnalyzer::analyzeFactor()
 		return oprd;
 		break;
 	case Lexer::Num:
-		oprd = findSymbol(tokens[index].value);
+		oprd = findSymbol(tokens[index].value,Lexer::Num);
 		index++;
 		return oprd;
 		break;
@@ -47,20 +48,114 @@ SemanticAnalyzer::operand SemanticAnalyzer::analyzeExpression()
 	OperatorType op;
 	operand result = findSymbol("_temp");
 	quadruple expression_quad;
-	expression_quad.first = first;
 
 	switch (tokens[index].type)
 	{
+	case Lexer::Subtraction:
+		expression_quad.first = first;
+		op = Subtraction;
+		expression_quad.op = op;
+		index++;
+		expression_quad.second = analyzeExpression();
+		expression_quad.result = result;
+		quadruples.push_back(expression_quad);
+		return result;
+		break;
+	case Lexer::Divide:
+		expression_quad.first = first;
+		op =Divide;
+		expression_quad.op = op;
+		index++;
+		expression_quad.second = analyzeExpression();
+		expression_quad.result = result;
+		quadruples.push_back(expression_quad);
+		return result;
+		break;
+	case Lexer::Multiply:
+		expression_quad.first = first;
+		op = Multiply;
+		expression_quad.op = op;
+
+		index++;
+		expression_quad.second = analyzeExpression();
+		expression_quad.result = result;
+		quadruples.push_back(expression_quad);
+		return result;
+		break;
 	case Lexer::Plus:
+	{
+		
+		expression_quad.first = first;
 		op = Plus;
 		expression_quad.op = op;
-		second = analyzeFactor();
-		expression_quad.second = second;
+		index++;
+		expression_quad.second = analyzeExpression();
+		expression_quad.result = result;
+		quadruples.push_back(expression_quad);
+		return result;
 		break;
 	}
-	expression_quad.result = result;
-	quadruples.push_back(expression_quad);
-	return result;
+	case Lexer::Semicolon:
+		return first;
+
+		break;
+	}
+}
+
+void SemanticAnalyzer::showQuadruples()
+{
+	for (auto item :quadruples)
+	{
+		cout
+			<< "(";
+		switch (item.op)
+		{
+		case OperatorType::Multiply:
+			cout << "*";
+			break;
+		case OperatorType::Divide:
+			cout << "/";
+			break;
+		case OperatorType::JP:
+			cout << "JP";
+			break;
+		case OperatorType::JPEqual:
+			cout << "JP=";
+			break;
+		case OperatorType::JPLess:
+			cout << "JP<";
+			break;
+		case OperatorType::JPLessEqual:
+			cout << "JP<=";
+			break;
+		case OperatorType::Subtraction:
+			cout << "JP-";
+			break;
+		case OperatorType::Assign:
+			cout << "=";
+			break;
+		case OperatorType::JPMore:
+			cout << "JP>";
+			break;
+		case OperatorType::Plus:
+			cout << "+";
+			break;
+		case OperatorType::JPMoreEqual:
+			cout << "JP>=";
+			break;
+
+		}
+		cout<< ","
+			<< getSymbolName(item.first.symbol_index) << ","
+			<< getSymbolName(item.second.symbol_index) << ","
+			<< getSymbolName(item.result.symbol_index)
+			<< ")" << endl;
+	}
+}
+
+string& SemanticAnalyzer::getSymbolName(int index)
+{
+	return symbols[index].name;
 }
 
 void SemanticAnalyzer::analyze(const Lexer::TokensVector& _tokens)
@@ -74,7 +169,7 @@ void SemanticAnalyzer::analyze(const Lexer::TokensVector& _tokens)
 	analyzeBlock();
 
 }
-SemanticAnalyzer::operand SemanticAnalyzer::findSymbol(const string & symbol_name)
+SemanticAnalyzer::operand SemanticAnalyzer::findSymbol(const string & symbol_name,Lexer::TokenType _type)
 {
 	operand op;
 
@@ -84,8 +179,16 @@ SemanticAnalyzer::operand SemanticAnalyzer::findSymbol(const string & symbol_nam
 	}
 	else
 	{
-		cout << "Ê¹ÓÃÁËÎ´ÉùÃ÷µÄ±äÁ¿" << endl;
-		throw exception();
+		if(_type == Lexer::Num)
+		{
+			op.symbol_index = addSymbol(symbol_name, symbol::Const);
+			return op;
+			
+		}else
+		{
+			cout << "Ê¹ÓÃÁËÎ´ÉùÃ÷µÄ±äÁ¿" << endl;
+			throw exception();
+		}
 
 	}
 	return op;
@@ -124,12 +227,11 @@ int SemanticAnalyzer::analyzeStmt() throw(exception)
 		return 1;
 	case Lexer::ID:
 		analyzeAssignment();
-		index++;
 		checkAndRead(Lexer::Semicolon);
+		break;
 	case Lexer::Int:
 	case Lexer::Float:
 		analyzeDecl();
-		index++;
 		checkAndRead(Lexer::Semicolon);
 		break;
 	case Lexer::If:
@@ -138,15 +240,13 @@ int SemanticAnalyzer::analyzeStmt() throw(exception)
 		errorMessage = "IfÓï¾äÈ±ÉÙ×óÀ¨ºÅ";
 		checkAndRead(Lexer::LeftBrackets);
 		analyzeBool();
-		index++;
 		errorMessage = "IfÓï¾äÈ±ÉÙÓÒÀ¨ºÅ";
 		checkAndRead(Lexer::RightBrackets);
 		checkAndRead(Lexer::LeftBigBrackets);
-		checkAndRead(Lexer::RightBigBrackets);
 
 		errorMessage = "IfÓï¾ä¿é´íÎó";
 		analyzeStmt();
-		index++;
+		checkAndRead(Lexer::RightBigBrackets);
 		checkAndRead(Lexer::Lexer::Else);
 		checkAndRead(Lexer::LeftBigBrackets);
 		analyzeStmt();
@@ -163,7 +263,6 @@ int SemanticAnalyzer::analyzeStmt() throw(exception)
 		checkAndRead(Lexer::LeftBigBrackets);
 		index++;
 		analyzeStmt();
-		index++;
 		errorMessage = "WhileÓï¾äÈ±ÉÙÓÒ´óÀ¨ºÅ";
 		checkAndRead(Lexer::RightBigBrackets);
 		break;
@@ -209,23 +308,44 @@ void SemanticAnalyzer::analyzeDecl()
 		break;
 	}
 }
-
 void SemanticAnalyzer::analyzeBool()
 {
 
+	quadruple boolQuad;
 	errorMessage = "²¼¶ûÓï¾ä´íÎó";
-	analyzeFactor();
+	boolQuad.first = analyzeFactor();
 	switch (tokens[index].type)
 	{
 	case Lexer::Equal:
-	case Lexer::LessOrEqul:
-	case Lexer::LessThan:
-	case Lexer::MoreOrEqul:
-	case Lexer::MoreThan:
+		boolQuad.op = OperatorType::JPEqual;
 		index++;
-		analyzeFactor();
+		boolQuad.second = analyzeFactor();
+		break;
+	case Lexer::LessOrEqul:
+		boolQuad.op = OperatorType::JPLessEqual;
+		index++;
+		boolQuad.second =  analyzeFactor();
+		break;
+	case Lexer::LessThan:
+
+		boolQuad.op = OperatorType::JPLess;
+		index++;
+		boolQuad.second = analyzeFactor();
+		break;
+	case Lexer::MoreOrEqul:
+
+		boolQuad.op = OperatorType::JPMoreEqual;
+		index++;
+		boolQuad.second = analyzeFactor();
+		break;
+	case Lexer::MoreThan:
+
+		boolQuad.op = OperatorType::JPMore;
+		index++;
+		boolQuad.second = analyzeFactor();
 		break;
 	}
+	quadruples.push_back(boolQuad);
 }
 
 void SemanticAnalyzer::analyzeWhile()

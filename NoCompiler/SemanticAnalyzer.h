@@ -17,11 +17,19 @@ public:
 	{
 		int jump_index;
 		int symbol_index;
+		operand()
+		{
+			jump_index = NULL;
+		}
 	};
 	enum OperatorType
 	{
 		JP,//Jump
-		JNZ,//JumpNotZero
+		JPMore,//JumpNotZero
+		JPEqual,
+		JPLess,
+		JPMoreEqual,
+		JPLessEqual,
 		Multiply,
 		Plus,
 		Assign,
@@ -74,9 +82,11 @@ public:
 	SemanticAnalyzer();
 	~SemanticAnalyzer();
 	int index;
+	void showQuadruples();
+	string& getSymbolName(int index);
 	void analyze(const Lexer::TokensVector& tokens);
-	operand findSymbol(const string& symbol_name);
-
+	
+	operand findSymbol(const string& symbol_name,Lexer::TokenType _type = Lexer::ID);
 	int addSymbol(const string& symbol_name, symbol::SymbolType _type);
 	int errorRowIndex;
 	string errorMessage;
@@ -85,6 +95,7 @@ private:
 	void checkAndRead(Lexer::TokenType);
 	operand analyzeFactor();
 	operand analyzeExpression();
+
 	void analyzeBlock();
 	int  analyzeStmt();
 	void analyzeAssignment();

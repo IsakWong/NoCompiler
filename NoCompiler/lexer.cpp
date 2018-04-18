@@ -170,6 +170,7 @@ Lexer::TokensVector Lexer::analyze(const string& source) throw(Lexer::LexerExcep
 			if (isOperatorCh(*it))
 			{
 				_tmp.push_back(*it);
+				++it;
 			}
 			else
 			{
