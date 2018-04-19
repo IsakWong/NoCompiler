@@ -43,7 +43,8 @@ public:
 		enum SymbolType
 		{
 			Const,
-			Variable
+			Variable,
+			Func
 		};
 		SymbolType type;
 

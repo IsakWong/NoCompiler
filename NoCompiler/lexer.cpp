@@ -177,8 +177,7 @@ Lexer::TokensVector Lexer::analyze(const string& source) throw(Lexer::LexerExcep
 				TokenType type = getTokenType(_tmp);
 				if (type<TokenType::Assign || type> TokenType::LessOrEqul)
 				{
-					error("ÔËËã·û³ö´í");
-					system("pause");
+					_state = LexerState::Empty;
 					break;
 				}
 				else
